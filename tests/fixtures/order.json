@@ -1,0 +1,121 @@
+{
+  "cases": [
+    {
+      "id": "order_0",
+      "row": {
+        "item": "hot weather",
+        "temperature_c": 40
+      },
+      "question": "Rate the temperature.",
+      "kind": "score",
+      "options": [
+        "cold",
+        "mild",
+        "hot"
+      ],
+      "expected": 2
+    },
+    {
+      "id": "order_1",
+      "row": {
+        "item": "yellow banana",
+        "color": "yellow"
+      },
+      "question": "Choose the item's color.",
+      "kind": "choice",
+      "options": [
+        "red",
+        "yellow",
+        "green"
+      ],
+      "expected": "yellow"
+    },
+    {
+      "id": "order_2",
+      "row": {
+        "item": "red apple",
+        "color": "red"
+      },
+      "question": "Is the item's color red?",
+      "kind": "noul",
+      "options": [],
+      "expected": 0.9
+    },
+    {
+      "id": "order_3",
+      "row": {
+        "item": "cold weather",
+        "temperature_c": 0
+      },
+      "question": "Rate the temperature.",
+      "kind": "score",
+      "options": [
+        "cold",
+        "mild",
+        "hot"
+      ],
+      "expected": 0
+    },
+    {
+      "id": "order_4",
+      "row": {
+        "item": "green pear",
+        "color": "green"
+      },
+      "question": "Choose the item's color.",
+      "kind": "choice",
+      "options": [
+        "red",
+        "yellow",
+        "green"
+      ],
+      "expected": "green"
+    },
+    {
+      "id": "order_5",
+      "row": {
+        "item": "yellow banana",
+        "color": "yellow"
+      },
+      "question": "Is the item's color red?",
+      "kind": "noul",
+      "options": [],
+      "expected": 0.1
+    },
+    {
+      "id": "order_6",
+      "row": {
+        "item": "red apple",
+        "color": "red"
+      },
+      "question": "Is the item's color red?",
+      "kind": "noul",
+      "options": [],
+      "expected": 0.9
+    },
+    {
+      "id": "order_7",
+      "row": {
+        "item": "red apple",
+        "color": "red",
+        "label": "서울",
+        "blank": ""
+      },
+      "question": "Is the item's color red?",
+      "kind": "noul",
+      "options": [],
+      "expected": 0.9
+    },
+    {
+      "id": "order_8",
+      "row": {
+        "item": "red apple",
+        "color": "red"
+      },
+      "question": "Is the item's color yellow?",
+      "kind": "noul",
+      "options": [],
+      "expected": 0.1
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "clickhouse-jev"
+version = "0.1.0"
+description = "Validated natural-language judgments for ClickHouse executable UDFs"
+requires-python = ">=3.10"
+license = {file = "LICENSE"}
+readme = "README.md"
+dependencies = []
+
+[project.urls]
+Repository = "https://github.com/ahwlsqja/clickhouse-jev"
+Issues = "https://github.com/ahwlsqja/clickhouse-jev/issues"
+
+[project.scripts]
+clickhouse-jev = "clickhouse_jev.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["clickhouse_jev*"]

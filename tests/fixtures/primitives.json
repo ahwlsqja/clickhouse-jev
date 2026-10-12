@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "id": "noul_red",
+      "row": {
+        "item": "red apple",
+        "color": "red"
+      },
+      "question": "Is the item's color red?",
+      "kind": "noul",
+      "options": []
+    },
+    {
+      "id": "noul_yellow",
+      "row": {
+        "item": "yellow banana",
+        "color": "yellow"
+      },
+      "question": "Is the item's color red?",
+      "kind": "noul",
+      "options": []
+    },
+    {
+      "id": "choice_yellow",
+      "row": {
+        "item": "yellow banana",
+        "color": "yellow"
+      },
+      "question": "Choose the item's color.",
+      "kind": "choice",
+      "options": [
+        "red",
+        "yellow",
+        "green"
+      ]
+    },
+    {
+      "id": "choice_green",
+      "row": {
+        "item": "green pear",
+        "color": "green"
+      },
+      "question": "Choose the item's color.",
+      "kind": "choice",
+      "options": [
+        "red",
+        "yellow",
+        "green"
+      ]
+    },
+    {
+      "id": "score_hot",
+      "row": {
+        "item": "hot weather",
+        "temperature_c": 40
+      },
+      "question": "Rate the temperature.",
+      "kind": "score",
+      "options": [
+        "cold",
+        "mild",
+        "hot"
+      ]
+    },
+    {
+      "id": "score_cold",
+      "row": {
+        "item": "cold weather",
+        "temperature_c": 0
+      },
+      "question": "Rate the temperature.",
+      "kind": "score",
+      "options": [
+        "cold",
+        "mild",
+        "hot"
+      ]
+    }
+  ]
+}

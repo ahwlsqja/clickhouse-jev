@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Python and ClickHouse
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Build test image
+        run: docker build -t clickhouse-jev .
+      - name: Run offline tests
+        run: >-
+          docker run --rm --network none --entrypoint python3
+          clickhouse-jev -m unittest discover -s tests -v
