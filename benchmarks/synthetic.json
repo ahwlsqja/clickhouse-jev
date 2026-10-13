@@ -1,0 +1,12 @@
+{
+  "question": "Which color is explicitly named in the color field of this synthetic record?",
+  "options": ["red", "yellow", "blue"],
+  "records": [
+    {"id": "fixture-001", "row": {"color": "red", "description": "A synthetic red cube."}, "expected": "red"},
+    {"id": "fixture-002", "row": {"color": "yellow", "description": "A synthetic yellow sphere."}, "expected": "yellow"},
+    {"id": "fixture-003", "row": {"color": "blue", "description": "A synthetic blue cone."}, "expected": "blue"},
+    {"id": "fixture-004", "row": {"color": "red", "description": "A synthetic red cylinder."}, "expected": "red"},
+    {"id": "fixture-005", "row": {"color": "yellow", "description": "A synthetic yellow prism."}, "expected": "yellow"},
+    {"id": "fixture-006", "row": {"color": "blue", "description": "A synthetic blue pyramid."}, "expected": "blue"}
+  ]
+}
