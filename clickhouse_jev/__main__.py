@@ -1,4 +1,4 @@
-"""ClickHouse executable UDF의 명령행 진입점."""
+"""Command-line entry point for the ClickHouse executable UDF."""
 import argparse
 import os
 import sys
@@ -8,7 +8,7 @@ from .worker import serve
 
 
 class SafeParser(argparse.ArgumentParser):
-    """사용자 값이 포함된 argparse 오류 문장을 출력하지 않는다."""
+    """Suppress argparse error messages that include user-provided values."""
 
     def error(self, message):
         raise ValueError('worker_arguments_invalid')
@@ -16,7 +16,7 @@ class SafeParser(argparse.ArgumentParser):
 
 def main(argv=None):
     try:
-        parser = SafeParser(description='Jev JSONEachRow 블록 판정')
+        parser = SafeParser(description='Evaluate Jev JSONEachRow blocks')
         for name in ('endpoint', 'model', 'expected_model'):
             parser.add_argument('--' + name.replace('_', '-'), required=True)
         for name in ('batch_size', 'concurrency', 'max_block_rows', 'max_row_chars', 'max_request_bytes'):

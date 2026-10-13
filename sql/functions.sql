@@ -1,4 +1,4 @@
--- 실행 UDF에 명시적으로 넘긴 JSON 행만 평가한다.
+-- Evaluate only the JSON rows explicitly passed to the executable UDF.
 CREATE FUNCTION IF NOT EXISTS jev_prob AS (row_json, question) ->
     JSONExtractFloat(jev_eval(row_json, question, 'noul', '[]'), 'noul');
 CREATE FUNCTION IF NOT EXISTS jev AS (row_json, question, threshold) ->

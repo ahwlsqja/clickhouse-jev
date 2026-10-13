@@ -20,6 +20,8 @@ docker run --rm --network none --entrypoint python3 \
 
 The image build needs network access to install system packages. The tests themselves use loopback mocks and synthetic fixtures with external networking disabled. No model account or API key is needed.
 
+Run the real-server demo with `docker compose up --build --exit-code-from demo --attach demo`. See [the demo guide](demo/README.md) for the expected output and negative test. Clean up with `docker compose down --volumes`.
+
 ## Changes
 
 - Add a regression test for a behavior change and check that it fails before the fix.
@@ -28,5 +30,6 @@ The image build needs network access to install system packages. The tests thems
 - Keep errors free of input rows, remote response bodies and credentials.
 - Update the README and installation guide when public behavior changes.
 - Include the test command and result in your pull request.
+- Write documentation, comments, user-facing messages and new commit messages in English. Preserve Unicode test coverage with synthetic examples.
 
 Use invented, minimal examples in issues and tests. Do not attach customer data, production exports, credentials, private traces or internal benchmark artifacts. Describe sensitive failures using a synthetic reproduction.

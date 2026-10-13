@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 class SyntheticFixtureTests(unittest.TestCase):
     def test_public_fixture_has_two_fixed_cases_per_primitive(self):
         path = ROOT / 'tests' / 'fixtures' / 'primitives.json'
-        self.assertTrue(path.is_file(), '고정된 합성 fixture가 필요하다')
+        self.assertTrue(path.is_file(), 'A fixed synthetic fixture is required')
         fixture = json.loads(path.read_text(encoding='utf-8'))
         cases = fixture['cases']
         self.assertEqual([case['kind'] for case in cases], ['noul', 'noul', 'choice', 'choice', 'score', 'score'])
@@ -37,7 +37,7 @@ class SyntheticFixtureTests(unittest.TestCase):
 class InstallerTests(unittest.TestCase):
     def test_explicit_directory_generates_safe_worker_xml_and_sql(self):
         installer = ROOT / 'scripts' / 'install.py'
-        self.assertTrue(installer.is_file(), '명시 경로 설치기를 제공해야 한다')
+        self.assertTrue(installer.is_file(), 'An installer for an explicit output path is required')
         with tempfile.TemporaryDirectory(prefix="jev space '") as temp:
             output = Path(temp) / 'isolated'
             command = [sys.executable, str(installer), '--output-dir', str(output),
@@ -111,7 +111,7 @@ def load_mock():
 class MockAPITests(unittest.TestCase):
     def test_three_primitives_return_configured_model_and_row_index_answers(self):
         self.assertTrue((ROOT / 'tests' / 'mock_api.py').is_file(),
-                        '결정론적 loopback mock이 필요하다')
+                        'A deterministic loopback mock is required')
         cases = json.loads((ROOT / 'tests' / 'fixtures' / 'primitives.json').read_text())['cases']
         for offset in (0, 2, 4):
             pair = cases[offset:offset + 2]
@@ -165,7 +165,7 @@ class MockAPITests(unittest.TestCase):
             self.assertEqual(mock.authorized_requests, 1)
 
 
-@unittest.skipUnless(shutil.which('clickhouse-local'), '실제 CH E2E는 개발 컨테이너에서 실행한다')
+@unittest.skipUnless(shutil.which('clickhouse-local'), 'ClickHouse end-to-end tests run in the development container')
 class ClickHouseE2ETests(unittest.TestCase):
     def run_query(self, mock, cases, select, block_size=6, credential=False):
         with tempfile.TemporaryDirectory(prefix='jev-e2e-') as temp:
@@ -181,7 +181,7 @@ class ClickHouseE2ETests(unittest.TestCase):
             if credential:
                 command += ['--api-key-env', 'JEV_FIXTURE_TOKEN']
             installation = subprocess.run(command, capture_output=True, text=True)
-            self.assertEqual(installation.returncode, 0, '독립 경로 설치 실패')
+            self.assertEqual(installation.returncode, 0, 'Installation in the isolated directory failed')
             input_file = directory / 'rows.jsonl'
             with input_file.open('w', encoding='utf-8') as stream:
                 for index, case in enumerate(cases):
@@ -206,13 +206,13 @@ class ClickHouseE2ETests(unittest.TestCase):
 
     def test_sql_three_primitives_threshold_and_normalized_score(self):
         self.assertTrue((ROOT / 'scripts' / 'offline_e2e.py').is_file(),
-                        '컨테이너의 offline E2E 진입점이 필요하다')
+                        'An offline end-to-end entry point for the container is required')
         cases = json.loads((ROOT / 'tests' / 'fixtures' / 'primitives.json').read_text())['cases']
         with load_mock().MockAPI() as mock:
             completed = self.run_query(mock, cases,
                 'SELECT id, jev_eval(row_json,question,kind,options_json) AS answer FROM rows')
             self.assertEqual(completed.returncode, 0,
-                             f'CH primitive 실행 실패: exit={completed.returncode}')
+                             f'ClickHouse primitive query failed: exit={completed.returncode}')
             outputs = [json.loads(line) for line in completed.stdout.splitlines()]
             self.assertEqual([row['id'] for row in outputs], list(range(6)))
             answers = [json.loads(row['answer']) for row in outputs]
@@ -224,21 +224,21 @@ class ClickHouseE2ETests(unittest.TestCase):
             completed = self.run_query(mock, cases[:2],
                 'SELECT id, jev_prob(row_json,question) AS probability, '
                 'jev(row_json,question,0.5) AS accepted FROM rows')
-            self.assertEqual(completed.returncode, 0, 'CH noul wrapper 실행 실패')
+            self.assertEqual(completed.returncode, 0, 'ClickHouse noul wrapper query failed')
             outputs = [json.loads(line) for line in completed.stdout.splitlines()]
             self.assertEqual([row['probability'] for row in outputs], [0.9, 0.1])
             self.assertEqual([row['accepted'] for row in outputs], [1, 0])
         with load_mock().MockAPI() as mock:
             completed = self.run_query(mock, cases[2:4],
                 'SELECT id, jev_choice(row_json,question,options_json) AS selected FROM rows')
-            self.assertEqual(completed.returncode, 0, 'CH choice wrapper 실행 실패')
+            self.assertEqual(completed.returncode, 0, 'ClickHouse choice wrapper query failed')
             self.assertEqual([json.loads(line)['selected'] for line in completed.stdout.splitlines()],
                              ['yellow', 'green'])
         with load_mock().MockAPI() as mock:
             completed = self.run_query(mock, cases[4:],
                 'SELECT id, jev_score(row_json,question,options_json) AS score, '
                 'jev_score_norm(row_json,question,options_json) AS normalized FROM rows')
-            self.assertEqual(completed.returncode, 0, 'CH score wrapper 실행 실패')
+            self.assertEqual(completed.returncode, 0, 'ClickHouse score wrapper query failed')
             outputs = [json.loads(line) for line in completed.stdout.splitlines()]
             self.assertEqual([row['score'] for row in outputs], [2, 0])
             self.assertEqual([row['normalized'] for row in outputs], [1, 0])
@@ -246,7 +246,7 @@ class ClickHouseE2ETests(unittest.TestCase):
 
     def test_mixed_prompts_duplicates_unicode_and_cross_blocks_preserve_order(self):
         fixture = ROOT / 'tests' / 'fixtures' / 'order.json'
-        self.assertTrue(fixture.is_file(), '순서 복원용 공개 적대 fixture가 필요하다')
+        self.assertTrue(fixture.is_file(), 'A public adversarial fixture for row ordering is required')
         cases = json.loads(fixture.read_text())['cases']
         expected = [case['expected'] for case in cases]
         for block_size in (9, 3):
@@ -255,7 +255,7 @@ class ClickHouseE2ETests(unittest.TestCase):
                     'SELECT id, jev_eval(row_json,question,kind,options_json) AS answer FROM rows',
                     block_size=block_size)
                 self.assertEqual(completed.returncode, 0,
-                                 f'CH 순서 복원 실패: exit={completed.returncode}')
+                                 f'ClickHouse row ordering failed: exit={completed.returncode}')
                 outputs = [json.loads(line) for line in completed.stdout.splitlines()]
                 self.assertEqual([row['id'] for row in outputs], list(range(len(cases))))
                 answers = [json.loads(row['answer']) for row in outputs]
@@ -266,7 +266,7 @@ class ClickHouseE2ETests(unittest.TestCase):
                 self.assertTrue(all(len(state['rows']) <= 2 for state in states))
                 sent = [row for state in states for row in state['rows']]
                 self.assertIn({'item': 'red apple', 'color': 'red',
-                               'label': '서울', 'blank': ''}, sent)
+                               'label': 'caf\u00e9', 'blank': ''}, sent)
                 second_kind = next(iter(mock.requests[1]['questions'].values()))['type']
                 self.assertEqual(mock.completions[0], second_kind)
                 self.assertNotEqual([next(iter(body['questions'].values()))['type']
@@ -275,7 +275,7 @@ class ClickHouseE2ETests(unittest.TestCase):
 
     def test_missing_nan_and_api_errors_fail_whole_block_without_output(self):
         fixture = ROOT / 'tests' / 'fixtures' / 'failures.json'
-        self.assertTrue(fixture.is_file(), '오류 블록 검증용 공개 fixture가 필요하다')
+        self.assertTrue(fixture.is_file(), 'A public fixture for block failure validation is required')
         modes = json.loads(fixture.read_text())['modes']
         cases = json.loads((ROOT / 'tests' / 'fixtures' / 'primitives.json').read_text())['cases'][:2]
         cases[0]['row']['marker'] = 'SENSITIVE_INPUT'
@@ -284,10 +284,10 @@ class ClickHouseE2ETests(unittest.TestCase):
                 completed = self.run_query(mock, cases,
                     'SELECT id, jev_eval(row_json,question,kind,options_json) AS answer FROM rows',
                     block_size=2)
-                self.assertNotEqual(completed.returncode, 0, '오류 블록은 CH 쿼리를 실패시켜야 한다')
-                self.assertFalse(completed.stdout, '실패 블록은 부분 결과를 출력할 수 없다')
-                self.assertFalse('SENSITIVE_INPUT' in completed.stderr, '입력 본문이 오류에 노출됨')
-                self.assertFalse('SENSITIVE_REMOTE_BODY' in completed.stderr, '원격 본문이 오류에 노출됨')
+                self.assertNotEqual(completed.returncode, 0, 'An invalid block must fail the ClickHouse query')
+                self.assertFalse(completed.stdout, 'A failed block must not emit partial results')
+                self.assertFalse('SENSITIVE_INPUT' in completed.stderr, 'The error exposed the input body')
+                self.assertFalse('SENSITIVE_REMOTE_BODY' in completed.stderr, 'The error exposed the remote response body')
                 self.assertEqual(len(mock.requests), 1)
 
 
@@ -296,19 +296,19 @@ class ClickHouseE2ETests(unittest.TestCase):
         with load_mock().MockAPI(expected_token='harmless-fixture-token') as mock:
             rejected = self.run_query(mock, cases,
                 'SELECT id, jev_eval(row_json,question,kind,options_json) AS answer FROM rows')
-            self.assertNotEqual(rejected.returncode, 0, '인증 없는 worker 요청은 실패해야 한다')
-            self.assertFalse(rejected.stdout, '인증 실패 블록은 stdout 결과가 없어야 한다')
+            self.assertNotEqual(rejected.returncode, 0, 'An unauthenticated worker request must fail')
+            self.assertFalse(rejected.stdout, 'An authentication failure must not produce block output')
             self.assertEqual(mock.authorized_requests, 0)
             accepted = self.run_query(mock, cases,
                 'SELECT id, jev_eval(row_json,question,kind,options_json) AS answer FROM rows',
                 credential=True)
-            self.assertEqual(accepted.returncode, 0, '명시 환경변수 인증 경로 실패')
+            self.assertEqual(accepted.returncode, 0, 'Authentication through the explicit environment variable failed')
             outputs = [json.loads(line) for line in accepted.stdout.splitlines()]
             self.assertEqual([row['id'] for row in outputs], list(range(6)))
             self.assertEqual(mock.authorized_requests, 3)
             self.assertEqual(len(mock.requests), 3)
             self.assertFalse('harmless-fixture-token' in accepted.stderr,
-                             'credential 값은 진단에 포함될 수 없다')
+                             'Diagnostics must not contain credential values')
 
 
 if __name__ == '__main__':

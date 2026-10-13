@@ -1,4 +1,4 @@
-"""Jev 요청과 응답의 명시적인 데이터 계약."""
+"""Explicit data contracts for Jev requests and responses."""
 from dataclasses import dataclass
 import json
 import math
@@ -11,7 +11,7 @@ _ANSWER_FIELDS = {
 
 
 class ContractError(ValueError):
-    """입력/원격 본문을 포함하지 않는 계약 오류."""
+    """Contract error that omits input and remote response bodies."""
 
 
 @dataclass(frozen=True)
@@ -137,7 +137,7 @@ def _number(value, lower, upper):
 
 
 def _close(actual, expected):
-    # 경계의 이진 부동소수점 표현 오차만 흡수한다.
+    # Account for binary floating-point representation error at the boundary.
     return abs(actual - expected) <= 0.02 + 1e-12
 
 
@@ -171,7 +171,7 @@ def validate_response(data: dict, rows: list[RowInput], expected_model: str) -> 
             _distribution(answer['probabilities'], keys)
             if row.kind == 'choice':
                 selected = answer['choice']
-                # 최댓값과의 확률 차이가 1e-12 이하면 동점으로 취급한다.
+                # Treat a probability difference from the maximum of at most 1e-12 as a tie.
                 if (not isinstance(selected, str) or selected not in row.options
                         or max(answer['probabilities'].values()) - answer['probabilities'][selected] > 1e-12):
                     raise ContractError('invalid_choice')

@@ -11,7 +11,7 @@ Filter, rank and classify rows with natural-language conditions, directly in SQL
 Inspired by [pg-jev](https://github.com/realZachi/pg-jev), with a separate implementation for ClickHouse's columnar execution model.
 
 ```sql
--- 고객 문의를 필터링한다.
+-- Filter support tickets.
 SELECT id, subject
 FROM tickets
 WHERE jev(
@@ -20,7 +20,7 @@ WHERE jev(
     0.7
 );
 
--- 자연어 조건의 확률로 정렬한다.
+-- Rank messages by a natural-language condition.
 SELECT subject,
        jev_prob(toJSONString(map('body', body)),
                 'The message describes an urgent service outage.') AS urgency
@@ -28,7 +28,7 @@ FROM tickets
 ORDER BY urgency DESC
 LIMIT 20;
 
--- 지정한 선택지 중 하나로 분류한다.
+-- Choose from a fixed set of labels.
 SELECT jev_choice(
     toJSONString(map('body', body)),
     'Which team should handle this ticket?',
@@ -37,7 +37,7 @@ SELECT jev_choice(
 FROM tickets
 GROUP BY team;
 
--- 순서가 있는 수준으로 상품을 평가한다.
+-- Score products on ordered levels.
 SELECT name, jev_score(
     toJSONString(map('name', name, 'description', description)),
     'How luxurious is this product?',
@@ -57,6 +57,29 @@ These examples assume the functions have been installed. `row_json` is a JSON ob
 4. Answers are restored to their original row positions. A block is written only after all its batches succeed.
 
 The worker processes the rows it receives from ClickHouse. It does not discover or read ahead through tables. There is no result cache or automatic retry.
+
+## Run the server demo
+
+From a checkout of this repository, with Docker and Docker Compose available:
+
+```sh
+docker compose up --build --exit-code-from demo --attach demo
+```
+
+This starts a real ClickHouse server and a local mock API, installs the UDF, loads three synthetic rows, and checks filtering, classification, scoring and normalized scoring. No API key is needed. The mock uses deterministic rules; it does not run an AI model.
+
+You will see results such as:
+
+```text
+Filter: [{"id": 1, "item": "red apple"}]
+Classification: [{"id": 1, "color": "red"}, {"id": 2, "color": "yellow"}, {"id": 3, "color": "green"}]
+Scoring: [{"id": 1, "score": 0, "normalized": 0}, {"id": 2, "score": 2, "normalized": 1}, {"id": 3, "score": 0, "normalized": 0}]
+Demo passed: real ClickHouse server, synthetic fixtures, local mock.
+```
+
+The command exits with the demo's status and stops the services. Remove the stopped containers and network with `docker compose down --volumes`. Runtime traffic stays on an internal Docker network, no host ports are published, and database storage is temporary. The first image build needs network access to download the image and system packages.
+
+See [the demo guide](demo/README.md) for interactive SQL and failure testing.
 
 ## Install
 

@@ -1,4 +1,4 @@
-"""Worker의 실행 경계와 스트림 출력 계약을 검증한다."""
+"""Verify worker execution boundaries and stream output contracts."""
 import io
 import json
 import os
@@ -165,7 +165,7 @@ class WorkerTests(unittest.TestCase):
                          config(max_request_bytes=100, max_row_chars=10), response)
 
     def test_multiple_zero_duplicate_unicode_blocks_preserve_results(self):
-        item = payload({'value': .1, 'blank': '', 'label': '한글 ☃'}, kind='choice', options=('예', '아니오'))
+        item = payload({'value': .1, 'blank': '', 'label': 'caf\u00e9 \u2603'}, kind='choice', options=('caf\u00e9', 'plain'))
         stream = '0\n2\n' + json.dumps(item, ensure_ascii=False) + '\n' + json.dumps(item, ensure_ascii=False) + '\n0\n1\n' + json.dumps(item, ensure_ascii=False) + '\n'
         seen = []
 
@@ -173,16 +173,16 @@ class WorkerTests(unittest.TestCase):
             state = json.loads(body['state'])
             seen.extend(state['rows'])
             return {'model': 'response-model', 'answers': {
-                'r%d' % i: {'type': 'choice', 'choice': '예', 'confidence': 1.0,
-                           'probabilities': {'예': 1.0, '아니오': 0.0}}
+                'r%d' % i: {'type': 'choice', 'choice': 'caf\u00e9', 'confidence': 1.0,
+                           'probabilities': {'caf\u00e9': 1.0, 'plain': 0.0}}
                 for i in range(len(state['rows']))}}
 
         out = io.StringIO()
         worker.serve(io.StringIO(stream), out, config(), transport)
         answers = [json.loads(json.loads(line)['result']) for line in out.getvalue().splitlines()]
-        self.assertEqual([a['choice'] for a in answers], ['예', '예', '예'])
-        self.assertEqual(seen, [{'value': .1, 'blank': '', 'label': '한글 ☃'}] * 3)
-        self.assertIn('예', out.getvalue())
+        self.assertEqual([a['choice'] for a in answers], ['caf\u00e9', 'caf\u00e9', 'caf\u00e9'])
+        self.assertEqual(seen, [{'value': .1, 'blank': '', 'label': 'caf\u00e9 \u2603'}] * 3)
+        self.assertIn('caf\u00e9', out.getvalue())
 
     def test_failed_answer_or_transport_has_no_partial_block_output(self):
         inputs = [payload({'value': .1}), payload({'value': .2})]
@@ -261,7 +261,7 @@ class WorkerTests(unittest.TestCase):
 
     def test_every_request_byte_limit_checked_before_any_transport(self):
         calls = []
-        inputs = [payload({'value': .1}), payload({'value': .2}, question='한' * 1000)]
+        inputs = [payload({'value': .1}), payload({'value': .2}, question='caf\u00e9 ' * 1000)]
         with self.assertRaises(ContractError):
             worker.evaluate_block(inputs, config(max_request_bytes=500),
                                   lambda body, timeout: calls.append(body) or response(body))

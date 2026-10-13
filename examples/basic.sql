@@ -1,4 +1,4 @@
--- 합성 행으로 각 SQL 함수를 호출한다. 설정한 endpoint에 모델 요청을 보낸다.
+-- Call each SQL function with synthetic rows. Queries send requests to the configured model endpoint.
 SELECT jev_prob(
     toJSONString(map('item', 'red apple')),
     'Is the item red?'

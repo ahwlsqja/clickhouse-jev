@@ -1,4 +1,4 @@
-"""공개 fixture만 사용하는 결정론적 Jev HTTP mock."""
+"""A deterministic Jev HTTP mock using synthetic fixtures only."""
 
 import json
 import threading
@@ -26,9 +26,10 @@ def make_answer(row, question, condition):
 
 
 class MockAPI:
-    """컨텍스트 종료 시 loopback 서버와 스레드를 회수한다."""
+    """Close the server and its thread when the context exits."""
 
-    def __init__(self, expected_model='mock/result', mode='success', expected_token=None, reverse_first_pair=False):
+    def __init__(self, expected_model='mock/result', mode='success', expected_token=None,
+                 reverse_first_pair=False, address=('127.0.0.1', 0)):
         self.expected_model = expected_model
         self.expected_token = expected_token
         self.authorized_requests = 0
@@ -105,7 +106,7 @@ class MockAPI:
                 except (ValueError, KeyError, TypeError):
                     self.send_error(400)
 
-        self.server = ThreadingHTTPServer(('127.0.0.1', 0), Handler)
+        self.server = ThreadingHTTPServer(address, Handler)
         self.server.daemon_threads = True
         self.endpoint = f'http://127.0.0.1:{self.server.server_port}/judge'
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
