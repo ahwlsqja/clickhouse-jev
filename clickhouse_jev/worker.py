@@ -1,4 +1,4 @@
-"""블록 단위 판정과 JSONEachRow 스트림을 처리한다."""
+"""Evaluate blocks and process JSONEachRow streams."""
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 import json
 import math
@@ -100,7 +100,7 @@ def serve(inp, out, config, transport):
             raise ContractError('worker_line_limit')
         return line
 
-    # Unicode와 따옴표의 JSON escape 및 외부 JSON의 재escape에 여유를 둔다.
+    # Allow space for Unicode and quote escaping, including the outer JSON envelope.
     line_limit = 6 * (config.max_request_bytes + config.max_row_chars) + 1024
     header_limit = len(str(config.max_block_rows)) + 2
     while True:

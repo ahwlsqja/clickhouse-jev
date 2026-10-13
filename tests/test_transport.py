@@ -1,4 +1,4 @@
-"""실제 credential이나 외부 네트워크 없이 전송 경계를 검증한다."""
+"""Verify transport boundaries without real credentials or external networking."""
 import dataclasses
 from contextlib import contextmanager
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -119,7 +119,7 @@ class CredentialTests(unittest.TestCase):
         self.assertEqual(validate_api_key('test-key\r\n'), 'test-key')
         self.assertEqual(validate_api_key('x'*4096), 'x'*4096)
         for value in ('', ' ', 'CREDENTIAL_SECRET\nsecond', 'CREDENTIAL_SECRET\n\n',
-                      'x'*4097, '\ud800', '한글', None, True):
+                      'x'*4097, '\ud800', 'caf\u00e9', None, True):
             with self.subTest(kind=type(value).__name__):
                 with self.assertRaises(TransportError) as caught:
                     validate_api_key(value)
@@ -267,7 +267,7 @@ class HttpTests(unittest.TestCase):
             self.assertEqual(len(received), 1)
 
     def test_oversized_or_nonfinite_request_never_reaches_http(self):
-        body = {'row': '한글'}
+        body = {'row': 'caf\u00e9'}
         payload = json.dumps(body, ensure_ascii=False, separators=(',', ':'),
                              allow_nan=False).encode('utf-8')
         with mock_server() as (endpoint, received):
@@ -276,7 +276,7 @@ class HttpTests(unittest.TestCase):
             self.assertEqual(len(received), 1)
             cyclic = []
             cyclic.append(cyclic)
-            for invalid in ({'row': '한글추가'}, {'n': float('nan')}, {'n': float('inf')},
+            for invalid in ({'row': 'caf\u00e9 extra'}, {'n': float('nan')}, {'n': float('inf')},
                             {'n': object()}, {'n': cyclic}, {'n': '\ud800'}, ['ROW_SECRET']):
                 with self.subTest(kind=type(invalid).__name__):
                     with self.assertRaises(TransportError) as caught:
@@ -305,7 +305,7 @@ class HttpTests(unittest.TestCase):
             self.assertEqual(len(received), 1)
 
     def test_success_posts_compact_utf8_json_and_optional_bearer(self):
-        body = {'row': {'이름': '한글'}, 'model': 'jev'}
+        body = {'row': {'caf\u00e9': 'na\u00efve'}, 'model': 'jev'}
         with mock_server() as (endpoint, received):
             config = Config(endpoint, 'jev', 'jev', allow_http=True)
             transport = HttpTransport(config, api_key='test-key')

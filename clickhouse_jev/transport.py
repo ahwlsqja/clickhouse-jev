@@ -1,4 +1,4 @@
-"""Jev HTTP 전송의 설정과 안전한 자격증명 입력."""
+"""Jev HTTP transport configuration and safe credential input."""
 
 from dataclasses import dataclass
 import http.client
@@ -15,7 +15,7 @@ MAX_RESPONSE_BYTES = 1000000
 
 
 class TransportError(ValueError):
-    """원격 응답이나 credential을 포함하지 않는 전송 오류."""
+    """Transport error that omits remote responses and credentials."""
 
 
 def _finite_float(value):
@@ -40,7 +40,7 @@ def _unique_object(pairs):
 
 @dataclass(frozen=True)
 class Config:
-    """전송 설정의 공개 인터페이스."""
+    """Public interface for transport configuration."""
 
     endpoint: str
     model: str
@@ -89,7 +89,7 @@ class Config:
 
 
 def validate_api_key(value: str) -> str:
-    """공개 credential 입력 경로가 공유하는 정규화 계약."""
+    """Shared normalization contract for public credential inputs."""
     if not isinstance(value, str):
         raise TransportError("invalid_credential")
     try:
@@ -105,7 +105,7 @@ def validate_api_key(value: str) -> str:
 
 
 def read_api_key(fd: int) -> str:
-    """호출자가 제공한 전용 FD를 한 번 소비한다."""
+    """Consume and close the dedicated file descriptor supplied by the caller."""
     if type(fd) is not int or fd < 0:
         raise TransportError("invalid_credential_fd")
     try:
@@ -128,7 +128,7 @@ def read_api_key(fd: int) -> str:
 
 
 class HttpTransport:
-    """한 번의 Jev HTTP 요청을 처리한다."""
+    """Handle a single Jev HTTP request."""
 
     def __init__(self, config: Config, api_key=None):
         self.config = config

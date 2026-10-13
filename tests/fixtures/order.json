@@ -98,7 +98,7 @@
       "row": {
         "item": "red apple",
         "color": "red",
-        "label": "서울",
+        "label": "caf\u00e9",
         "blank": ""
       },
       "question": "Is the item's color red?",

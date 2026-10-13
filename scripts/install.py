@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""명시한 디렉터리에만 ClickHouse 실행 UDF 파일을 생성한다."""
+"""Generate ClickHouse executable UDF files only in the specified directory."""
 
 import argparse
 import math
@@ -13,14 +13,14 @@ from pathlib import Path
 def positive_int(value):
     number = int(value)
     if number <= 0:
-        raise argparse.ArgumentTypeError('양의 정수가 필요하다')
+        raise argparse.ArgumentTypeError('A positive integer is required')
     return number
 
 
 def positive_float(value):
     number = float(value)
     if not math.isfinite(number) or number <= 0:
-        raise argparse.ArgumentTypeError('유한한 양수가 필요하다')
+        raise argparse.ArgumentTypeError('A finite positive number is required')
     return number
 
 
@@ -45,7 +45,7 @@ def main(argv=None):
     credential.add_argument('--api-key-env')
     args = parser.parse_args(argv)
     if args.api_key_fd is not None and args.api_key_fd < 0:
-        parser.error('--api-key-fd는 음수가 될 수 없다')
+        parser.error('--api-key-fd must not be negative')
 
     output = args.output_dir.resolve()
     output.mkdir(parents=True, exist_ok=True)
@@ -96,7 +96,7 @@ def main(argv=None):
                                  xml_declaration=True)
     shutil.copyfile(Path(__file__).resolve().parents[1] / 'sql' / 'functions.sql',
                     output / 'functions.sql')
-    print('설치 파일 생성 완료')
+    print('Installation files generated')
     return 0
 
 

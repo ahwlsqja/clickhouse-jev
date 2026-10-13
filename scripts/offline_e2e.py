@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""개발 컨테이너 내부에서 실제 CH와 loopback mock의 E2E를 실행한다."""
+"""Run end-to-end tests with ClickHouse and a loopback mock in the development container."""
 
 import shutil
 import subprocess
@@ -10,7 +10,7 @@ from pathlib import Path
 
 def main():
     if not shutil.which('clickhouse-local'):
-        print('ClickHouse 개발 컨테이너에서 실행해야 한다', file=sys.stderr)
+        print('Run this command in the ClickHouse development container', file=sys.stderr)
         return 1
     version = subprocess.run(['clickhouse-local', '--version-clean'], capture_output=True,
                              text=True, check=True).stdout.strip()

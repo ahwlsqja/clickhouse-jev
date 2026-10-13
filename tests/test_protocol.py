@@ -1,4 +1,4 @@
-"""외부 연결 없이 판정 입력과 응답의 공개 계약을 검증한다."""
+"""Verify public input and response contracts without external connections."""
 from dataclasses import FrozenInstanceError
 import json
 import unittest
@@ -7,8 +7,8 @@ from clickhouse_jev.protocol import ContractError, RowInput, parse_input, build_
 
 
 def payload(**changes):
-    value = {'row_json': '{"name":"서울","blank":"","nested":[null,true,2]}',
-             'question': '  도시인가?  ', 'kind': 'noul', 'options_json': '[]'}
+    value = {'row_json': '{"name":"caf\u00e9","blank":"","nested":[null,true,2]}',
+             'question': '  Is this a cafe?  ', 'kind': 'noul', 'options_json': '[]'}
     value.update(changes)
     return value
 
@@ -31,10 +31,10 @@ class ProtocolTests(unittest.TestCase):
 
     def test_p01_preserves_unicode_blank_values_position_and_frozen_fields(self):
         parsed = parse_input(payload(), 7, 1000)
-        self.assertIsNotNone(parsed, '입력은 RowInput으로 변환되어야 한다')
-        self.assertEqual(parsed.row, {'name': '서울', 'blank': '', 'nested': [None, True, 2]})
+        self.assertIsNotNone(parsed, 'Input must be converted into RowInput')
+        self.assertEqual(parsed.row, {'name': 'caf\u00e9', 'blank': '', 'nested': [None, True, 2]})
         self.assertEqual((parsed.position, parsed.question, parsed.kind, parsed.options),
-                         (7, '  도시인가?  ', 'noul', ()))
+                         (7, '  Is this a cafe?  ', 'noul', ()))
         with self.assertRaises(FrozenInstanceError):
             parsed.position = 8
 
@@ -79,12 +79,12 @@ class ProtocolTests(unittest.TestCase):
         for kind in ['choice', 'score']:
             for text in ['[]', '["one"]', '["a","a"]', '["a",""]', json.dumps(['a', ' \n\t'])]:
                 self.assert_safe_rejection(lambda: parse_input(payload(kind=kind, options_json=text), 0, 1000))
-            parsed = parse_input(payload(kind=kind, options_json='["  낮음  ","높음"]'), 0, 1000)
-            self.assertEqual(parsed.options, ('  낮음  ', '높음'))
+            parsed = parse_input(payload(kind=kind, options_json='["  caf\u00e9  ","plain"]'), 0, 1000)
+            self.assertEqual(parsed.options, ('  caf\u00e9  ', 'plain'))
 
     def test_p08_builds_ordered_questions_and_json_string_state(self):
         for kind in ['noul', 'choice', 'score']:
-            opts = [] if kind == 'noul' else [' 낮음 ', '높음']
+            opts = [] if kind == 'noul' else [' caf\u00e9 ', 'plain']
             rows = [parse_input(payload(kind=kind, options_json=json.dumps(opts)), 7, 1000),
                     parse_input(payload(row_json='{"blank":""}', kind=kind,
                                         options_json=json.dumps(opts)), 2, 1000)]
@@ -92,7 +92,7 @@ class ProtocolTests(unittest.TestCase):
             self.assertEqual(set(request), {'model', 'state', 'questions'})
             self.assertEqual(request['model'], 'typesafe/fixture')
             self.assertIsInstance(request['state'], str)
-            self.assertIn('서울', request['state'])
+            self.assertIn('caf\u00e9', request['state'])
             self.assertEqual(json.loads(request['state']),
                              {'condition': rows[0].question, 'rows': [row.row for row in rows]})
             self.assertEqual(list(request['questions']), ['r0', 'r1'])
