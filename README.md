@@ -81,6 +81,26 @@ The command exits with the demo's status and stops the services. Remove the stop
 
 See [the demo guide](demo/README.md) for interactive SQL and failure testing.
 
+## Compare batch behavior
+
+From a source checkout:
+
+```sh
+python3 -m benchmarks.worker_batching
+```
+
+This runs an offline benchmark with synthetic inputs and a deterministic mock.
+It compares batch sizes 1, 5 and 20, reversed order within each batch of 20,
+and an identical repeat. The aggregate JSON report distinguishes failed
+judgments from successful comparisons and records the comparison denominators.
+Mock results verify the measurement code; they do not measure model accuracy
+or stability.
+
+The [benchmark guide](benchmarks/README.md) also describes explicit live-model
+runs and external input files. Keep private inputs and their reports outside
+this checkout. The benchmark controls worker batches directly; it does not
+measure ClickHouse query planning or server throughput.
+
 ## Install
 
 Requirements:
@@ -90,6 +110,9 @@ Requirements:
 - A Jev-compatible System One endpoint and any credentials required by that endpoint.
 
 The integration tests use ClickHouse **26.8**. Check your hosting provider's support for executable UDFs before installing on a managed service.
+
+See the [support scope](docs/support.md) and [0.1.0 release candidate notes](docs/releases/0.1.0.md)
+for tested configurations and remaining validation limits.
 
 ### From source
 
