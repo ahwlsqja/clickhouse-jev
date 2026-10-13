@@ -1,0 +1,56 @@
+name: clickhouse-jev-demo
+
+x-demo-image: &demo-image
+  image: clickhouse-jev-demo:local
+  pull_policy: never
+  networks: [demo]
+  tmpfs:
+    - /var/lib/clickhouse
+    - /var/log/clickhouse-server
+
+services:
+  mock:
+    <<: *demo-image
+    build:
+      context: .
+      target: demo
+    pull_policy: build
+    entrypoint: [python3, /opt/clickhouse-jev/demo/mock_server.py]
+    command: [--mode, "${JEV_DEMO_MOCK_MODE:-success}"]
+    healthcheck:
+      test:
+        - CMD
+        - python3
+        - -c
+        - "import socket; socket.create_connection(('127.0.0.1', 8765), timeout=2).close()"
+      interval: 2s
+      timeout: 3s
+      retries: 20
+      start_period: 2s
+
+  clickhouse:
+    <<: *demo-image
+    environment:
+      CLICKHOUSE_USER: demo
+      CLICKHOUSE_PASSWORD: demo
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: "1"
+    depends_on:
+      mock:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, clickhouse-client, --user, demo, --password, demo, --query, SELECT 1]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+      start_period: 5s
+
+  demo:
+    <<: *demo-image
+    entrypoint: [python3, /opt/clickhouse-jev/demo/verify.py]
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+
+networks:
+  demo:
+    internal: true

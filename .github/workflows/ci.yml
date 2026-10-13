@@ -17,9 +17,44 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
+      - name: Check repository text
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          import subprocess
+          pattern = re.compile(r'[\u1100-\u11ff\u3130-\u318f\ua960-\ua97f\uac00-\ud7ff]')
+          files = subprocess.check_output(['git', 'ls-files', '-z'], text=True).split('\0')
+          invalid = []
+          for name in filter(None, files):
+              try:
+                  content = Path(name).read_text(encoding='utf-8')
+              except UnicodeDecodeError:
+                  continue
+              if pattern.search(content):
+                  invalid.append(name)
+          if invalid:
+              raise SystemExit('Use English text in: ' + ', '.join(invalid))
+          PY
       - name: Build test image
         run: docker build -t clickhouse-jev .
       - name: Run offline tests
         run: >-
           docker run --rm --network none --entrypoint python3
           clickhouse-jev -m unittest discover -s tests -v
+      - name: Run real-server demo
+        run: docker compose up --build --exit-code-from demo --attach demo
+      - name: Verify demo failure propagation
+        run: |
+          set +e
+          JEV_DEMO_MOCK_MODE=error docker compose up --no-build --force-recreate --exit-code-from demo --attach demo
+          status=$?
+          set -e
+          test "$status" -eq 1
+          demo_container=$(docker compose ps -aq demo)
+          test -n "$demo_container"
+          test "$(docker inspect --format '{{.State.ExitCode}}' "$demo_container")" -eq 1
+          docker compose logs --no-color demo | grep -F 'Demo failed: ClickHouse query failed'
+      - name: Clean up demo
+        if: always()
+        run: docker compose down --volumes
